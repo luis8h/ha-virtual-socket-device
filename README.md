@@ -1,0 +1,1 @@
+# ha-virtual-socket-device
