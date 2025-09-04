@@ -1,23 +1,24 @@
-import voluptuous as vol
+# config_flow.py
 from homeassistant import config_entries
+from homeassistant.core import callback
 from .const import DOMAIN
+import voluptuous as vol
 
-class ExampleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Example config flow for enabling the integration."""
-
+class VirtualSocketConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Config flow for Virtual Socket Device."""
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
-        """Handle the initial step initiated by the user."""
-        if self._async_current_entries():
-            return self.async_abort(reason="single_instance_allowed")
-
         if user_input is None:
-            # Use an empty schema correctly
             return self.async_show_form(
                 step_id="user",
-                data_schema=vol.Schema({}),
+                data_schema=vol.Schema({
+                    vol.Required("switch_name"): str
+                }),
             )
 
-        return self.async_create_entry(title="Example Integration", data={})
+        return self.async_create_entry(
+            title=user_input["switch_name"],
+            data=user_input
+        )
 
