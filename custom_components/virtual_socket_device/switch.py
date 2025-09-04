@@ -1,13 +1,17 @@
+from homeassistant.core import Event
+from functools import cached_property
+from typing import Any, override
+from habluetooth.const import CALLBACK_TYPE
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import EventStateChangedData, async_track_state_change_event
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
+    hass: HomeAssistant,  # pyright: ignore[reportUnusedParameter]
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback
 ):
@@ -20,42 +24,46 @@ class VirtualSocketSwitch(SwitchEntity):
     """Virtual Socket Switch entity."""
 
     def __init__(self, name: str, entry: ConfigEntry):
-        self._attr_name = name
-        self._is_on = False
-        self._entry = entry
-        self._unique_id = f"{entry.entry_id}_{name}"
-        self._unsub = None
+        self._attr_name: str | None = name
+        self._is_on: bool = False
+        self._entry: ConfigEntry = entry
+        self._unique_id: str = f"{entry.entry_id}_{name}"
+        self._unsub: None | CALLBACK_TYPE = None
 
-    @property
+    @cached_property
     def unique_id(self) -> str:
         return self._unique_id
 
     @property
-    def is_on(self) -> bool:
+    @override
+    def is_on(self) -> bool:  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._is_on
 
-    async def async_turn_on(self) -> None:
+    @override
+    async def async_turn_on(self, **kwargs: Any) -> None:
         linked = self._get_linked_switch()
         if linked:
-            await self.hass.services.async_call(
+            _ = await self.hass.services.async_call(
                 "switch", "turn_on", {"entity_id": linked}
             )
         self._is_on = True
         self.async_write_ha_state()
 
-    async def async_turn_off(self) -> None:
+    @override
+    async def async_turn_off(self, **kwargs: Any) -> None:
         linked = self._get_linked_switch()
         if linked:
-            await self.hass.services.async_call(
+            _ = await self.hass.services.async_call(
                 "switch", "turn_off", {"entity_id": linked}
             )
         self._is_on = False
         self.async_write_ha_state()
 
+    @override
     async def async_added_to_hass(self) -> None:
         """Called when entity is added to Home Assistant."""
         # Listen for config entry updates
-        self._entry.add_update_listener(self._options_updated)
+        _ = self._entry.add_update_listener(self._options_updated)
         await self._subscribe_to_linked_switch()
 
     async def _subscribe_to_linked_switch(self) -> None:
@@ -75,7 +83,7 @@ class VirtualSocketSwitch(SwitchEntity):
         )
 
     @callback
-    def _state_listener(self, event) -> None:
+    def _state_listener(self, event: Event[EventStateChangedData]) -> None:
         """Update virtual switch state when linked switch changes."""
         new_state = event.data.get("new_state")
         if new_state:
@@ -83,7 +91,7 @@ class VirtualSocketSwitch(SwitchEntity):
             self.async_write_ha_state()
 
     @callback
-    def _options_updated(self, hass: HomeAssistant, entry: ConfigEntry):
+    def _options_updated(self, hass: HomeAssistant, entry: ConfigEntry):  # pyright: ignore[reportUnusedParameter]
         """Handle config entry updates. Return coroutine for HA."""
         return self._handle_options_update(entry)
 
@@ -106,6 +114,7 @@ class VirtualSocketSwitch(SwitchEntity):
         return linked
 
 
+    @override
     async def async_will_remove_from_hass(self) -> None:
         """Clean up subscriptions when entity is removed."""
         if self._unsub:

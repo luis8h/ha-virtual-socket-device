@@ -16,17 +16,10 @@ class VirtualSocketConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data=user_input
             )
 
-        # entity_registry = er.async_get(self.hass)
-        # switch_entities = {
-        #     e.entity_id: e.name or e.entity_id
-        #     for e in entity_registry.entities.values()
-        #     if e.domain == "switch"
-        # }
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({
                 vol.Required("switch_name"): str,
-                # vol.Optional("linked_switch"): vol.In(switch_entities)
             }),
         )
 
