@@ -1,0 +1,10 @@
+{
+  "domain": "virtual_socket_device",
+  "name": "Virtual Socket Device",
+  "version": "0.1.0",
+  "documentation": "https://github.com/luis8h/ha-virtual-socket-device.git",
+  "requirements": [],
+  "codeowners": ["@yourusername"],
+  "iot_class": "local_polling"
+}
+
