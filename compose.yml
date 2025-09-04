@@ -4,6 +4,7 @@ services:
     image: "ghcr.io/home-assistant/home-assistant:stable"
     volumes:
       - ./test-config/:/config
+      - ./custom_components/virtual_socket_device:/config/custom_components/virtual_socket_device:cached
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
     privileged: true
