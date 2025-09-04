@@ -4,12 +4,13 @@ from homeassistant.core_config import Config
 
 from .const import DOMAIN, PLATFORMS
 
-async def async_setup(hass: HomeAssistant, config: Config) -> bool:
+async def async_setup(hass: HomeAssistant, config: Config) -> bool:  # pyright: ignore[reportUnusedParameter]
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

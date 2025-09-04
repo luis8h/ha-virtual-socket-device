@@ -33,7 +33,7 @@ class VirtualSocketConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class VirtualSocketOptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self.config_entry: config_entries.ConfigEntry = config_entry
+        self._entry: config_entries.ConfigEntry = config_entry
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
         # Get all switch entities for the dropdown
@@ -45,15 +45,15 @@ class VirtualSocketOptionsFlowHandler(config_entries.OptionsFlow):
         }
 
         # Ensure virtual switch cannot link to itself
-        current_entity_id = f"{self.config_entry.entry_id}_{self.config_entry.data['switch_name']}"
+        current_entity_id = f"{self._entry.entry_id}_{self._entry.data['switch_name']}"
         _ = switch_entities.pop(current_entity_id, None)
 
         if user_input is not None:
             # Update the integration title if the name changed
             new_name = user_input["switch_name"]
-            if new_name != self.config_entry.title:
+            if new_name != self._entry.title:
                 _ = self.hass.config_entries.async_update_entry(
-                    self.config_entry,
+                    self._entry,
                     title=new_name
                 )
 
@@ -61,7 +61,7 @@ class VirtualSocketOptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(
                 title="",
                 data={
-                    "switch_name": user_input.get("switch_name", self.config_entry.title),
+                    "switch_name": user_input.get("switch_name", self._entry.title),
                     "linked_switch": user_input.get("linked_switch")
                 }
             )
@@ -69,7 +69,7 @@ class VirtualSocketOptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema({
-                vol.Required("switch_name", default=self.config_entry.options.get("switch_name", self.config_entry.data["switch_name"])): str,
-                vol.Optional("linked_switch", default=self.config_entry.options.get("linked_switch")): vol.In(switch_entities)
+                vol.Required("switch_name", default=self._entry.options.get("switch_name", self._entry.data["switch_name"])): str,
+                vol.Optional("linked_switch", default=self._entry.options.get("linked_switch")): vol.In(switch_entities)
             }),
         )
