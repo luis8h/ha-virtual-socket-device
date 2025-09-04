@@ -1,4 +1,4 @@
-DOMAIN = "hello_state"
+DOMAIN = "virtual_socket_device"
 
 
 async def async_setup(hass, config):
